@@ -1,20 +1,26 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# Calculadora de Incremento Salarial UGT (2025-2026)
 
-This contains everything you need to run your app locally.
+Este proyecto es un simulador salarial para empleados públicos basado en el **Real Decreto-ley 14/2025** y el Acuerdo Marco pactado por **UGT** con el Gobierno de España.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1vVueOBa_42ahiVaO7yPYpD665RtoVi3R
+## Características
+- **Entrada de datos sencilla:** Configura tu salario mensual bruto de 2024.
+- **Cálculo de consolidación:** Muestra cómo las subidas del 2025 y 2026 se integran permanentemente en la nómina.
+- **Previsión IPC:** Opción para calcular el incremento variable del 0,5% en 2026.
+- **Visualización:** Gráficos interactivos de progresión salarial con Recharts.
+- **Responsive:** Diseño adaptado a móviles y escritorio con Tailwind CSS.
 
-## Run Locally
+## Cómo ejecutarlo
+Dado que utiliza módulos ES6 nativos, necesitas un servidor local para abrirlo (no basta con doble clic en el archivo HTML):
+1. Si usas VS Code, instala la extensión **Live Server**.
+2. Haz clic derecho en `index.html` y selecciona "Open with Live Server".
 
-**Prerequisites:**  Node.js
+## Tecnologías
+- React 19
+- Tailwind CSS
+- Lucide React (Iconos)
+- Recharts (Gráficos)
+- TypeScript
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+*Nota: Esta herramienta es informativa y no vinculante.*
