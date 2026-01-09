@@ -1,15 +1,36 @@
 
 export const BOE_DATA = {
   TITLE: "Real Decreto-ley 14/2025",
-  YEAR_2025: {
-    FIXED: 0.025, // 2.5% consolidable
-    DESCRIPTION: "Subida consolidable del 2,5% respecto a 2024."
-  },
-  YEAR_2026: {
-    FIXED: 0.015, // 1.5% consolidable
-    VARIABLE: 0.005, // 0.5% variable IPC
-    DESCRIPTION: "Subida fija del 1,5% más un 0,5% adicional si el IPC >= 1,5%."
-  }
+  YEARS: [
+    {
+      year: 2025,
+      fixed: 0.02, // 2% según RDL 14/2025
+      variable: 0.005, // 0.5% variable IPCA
+      isConfirmed: true,
+      description: "Subida fija del 2% + 0,5% variable (IPCA)."
+    },
+    {
+      year: 2026,
+      fixed: 0.015, // 1.5% según RDL 14/2025
+      variable: 0.005, // 0.5% variable IPCA
+      isConfirmed: true,
+      description: "Subida fija del 1,5% + 0,5% variable (IPCA)."
+    },
+    {
+      year: 2027,
+      fixed: 0.015,
+      variable: 0.005,
+      isConfirmed: false,
+      description: "Previsión de acuerdo: 1,5% fijo + 0,5% variable."
+    },
+    {
+      year: 2028,
+      fixed: 0.015,
+      variable: 0.005,
+      isConfirmed: false,
+      description: "Previsión de acuerdo: 1,5% fijo + 0,5% variable."
+    }
+  ]
 };
 
 export const COLORS = {
