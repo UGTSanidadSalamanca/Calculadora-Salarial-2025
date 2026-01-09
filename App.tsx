@@ -25,8 +25,8 @@ import {
   Cell,
   Legend
 } from 'recharts';
-import { BOE_DATA, COLORS } from './constants';
-import { CalculationInputs, SalaryBreakdown } from './types';
+import { BOE_DATA, COLORS } from './constants.tsx';
+import { CalculationInputs, SalaryBreakdown } from './types.ts';
 
 // Helper component for Cards
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = "" }) => (
