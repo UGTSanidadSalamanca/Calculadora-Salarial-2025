@@ -1,6 +1,6 @@
 
 export const BOE_DATA = {
-  TITLE: "RDL 14/2025",
+  TITLE: "BOE-A-2025-24445",
   YEARS: [
     {
       year: 2025,

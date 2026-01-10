@@ -87,26 +87,33 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] text-slate-900 font-sans selection:bg-red-50">
-      {/* Header Slim */}
+      {/* Header Slim con Logo Policromo */}
       <header className="bg-white border-b border-slate-100 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-red-600 text-white p-1.5 rounded-lg">
-              <Calculator size={20} strokeWidth={2.5} />
+            <div className="bg-red-600 text-white p-1.5 rounded-lg shadow-sm">
+              <Calculator size={18} strokeWidth={2.5} />
             </div>
-            <h1 className="text-sm font-black tracking-tight uppercase">
-              Simulador <span className="text-red-600">UGT</span>
+            <h1 className="text-xs font-black tracking-tight uppercase hidden sm:block">
+              Simulador <span className="text-red-600">Salarial</span>
             </h1>
           </div>
-          <a href="https://www.ugt.es" target="_blank" className="opacity-40 hover:opacity-100 transition-opacity">
-            <img src="https://www.ugt.es/sites/default/files/ugt_logo_0.png" alt="UGT" className="h-6" />
+          <a href="https://www.ugt.es" target="_blank" className="hover:opacity-80 transition-opacity">
+            <img 
+              src="https://www.ugt.es/sites/default/files/logo_policromo_header_ugt.png" 
+              alt="UGT" 
+              className="h-10 md:h-12 w-auto object-contain" 
+            />
           </a>
         </div>
       </header>
 
       {/* HERO SECTION: Dashboard de Impacto */}
-      <section className="bg-slate-900 pt-12 pb-24 px-6">
-        <div className="max-w-6xl mx-auto">
+      <section className="bg-slate-900 pt-12 pb-24 px-6 relative overflow-hidden">
+        {/* Decoración de fondo */}
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-red-600/5 to-transparent pointer-events-none"></div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
@@ -150,7 +157,7 @@ const App: React.FC = () => {
                             key={num}
                             onClick={() => setInputs(prev => ({ ...prev, numPayments: num as 12 | 14 }))}
                             className={`flex-1 py-2 rounded-lg font-black text-xs transition-all ${
-                              inputs.numPayments === num ? 'bg-white text-slate-900' : 'text-slate-400'
+                              inputs.numPayments === num ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-400'
                             }`}
                           >
                             {num}
@@ -163,11 +170,11 @@ const App: React.FC = () => {
                       <button 
                         onClick={() => setInputs(prev => ({ ...prev, includeVariable2026: !prev.includeVariable2026 }))}
                         className={`w-full py-2.5 rounded-xl border font-black text-xs transition-all flex items-center justify-center gap-2 ${
-                          inputs.includeVariable2026 ? 'bg-blue-500 border-blue-400 text-white' : 'bg-white/5 border-white/5 text-slate-400'
+                          inputs.includeVariable2026 ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 border-white/5 text-slate-400'
                         }`}
                       >
                         {inputs.includeVariable2026 ? <CheckCircle2 size={12} /> : null}
-                        {inputs.includeVariable2026 ? 'ACTIVO (+0.5%)' : 'DESACTIVAR'}
+                        {inputs.includeVariable2026 ? 'ACTIVO' : 'IPC OFF'}
                       </button>
                     </div>
                   </div>
@@ -205,11 +212,11 @@ const App: React.FC = () => {
                   }`}>
                     <div className="flex flex-col md:flex-row md:items-center gap-4">
                       {/* Año Bubble */}
-                      <div className={`flex flex-col items-center justify-center p-6 md:w-32 rounded-[2.2rem] ${
-                        isBaseline ? 'bg-slate-50 text-slate-300' : 'bg-slate-900 text-white shadow-lg'
+                      <div className={`flex flex-col items-center justify-center p-6 md:w-32 rounded-[2.2rem] transition-colors ${
+                        isBaseline ? 'bg-slate-50 text-slate-300' : 'bg-slate-900 text-white shadow-lg group-hover:bg-red-600'
                       }`}>
                         <span className="text-3xl font-black tracking-tighter leading-none">{yearData.year}</span>
-                        {!isBaseline && <span className="text-[8px] font-bold uppercase mt-1 tracking-widest text-red-500">Acuerdo</span>}
+                        {!isBaseline && <span className="text-[8px] font-bold uppercase mt-1 tracking-widest opacity-80">Acuerdo</span>}
                       </div>
 
                       {/* Datos de Porcentaje */}
@@ -286,8 +293,8 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-blue-600 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl shadow-blue-100">
-              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4">
+            <div className="bg-blue-600 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-xl shadow-blue-100 group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
                 <ShieldCheck size={140} />
               </div>
               <h4 className="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -297,9 +304,9 @@ const App: React.FC = () => {
                 Este incremento es <strong className="text-white">consolidable</strong>, lo que significa que formará parte permanente de tu base de cotización para tu futura jubilación.
               </p>
               <a 
-                href="https://www.boe.es/diario_boe/txt.php?id=BOE-A-2025-1815" 
+                href="https://www.boe.es/boe/dias/2025/12/03/pdfs/BOE-A-2025-24445.pdf" 
                 target="_blank" 
-                className="inline-flex items-center gap-2 text-[10px] font-black bg-white text-blue-600 px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-colors uppercase tracking-widest"
+                className="inline-flex items-center gap-2 text-[10px] font-black bg-white text-blue-600 px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-all uppercase tracking-widest shadow-lg shadow-blue-900/20"
               >
                 Referencia BOE <ExternalLink size={10} />
               </a>
@@ -310,17 +317,21 @@ const App: React.FC = () => {
 
       <footer className="bg-slate-50 border-t border-slate-100 pt-20 pb-12 px-6">
         <div className="max-w-6xl mx-auto flex flex-col items-center text-center gap-8">
-          <div className="flex items-center gap-4 opacity-30 grayscale">
-            <div className="h-px w-12 bg-slate-300"></div>
-            <img src="https://www.ugt.es/sites/default/files/ugt_logo_0.png" alt="UGT" className="h-8" />
-            <div className="h-px w-12 bg-slate-300"></div>
+          <div className="flex items-center gap-4">
+            <div className="h-px w-12 bg-slate-200"></div>
+            <img 
+              src="https://www.ugt.es/sites/default/files/logo_policromo_header_ugt.png" 
+              alt="UGT" 
+              className="h-12 opacity-50 grayscale hover:grayscale-0 transition-all" 
+            />
+            <div className="h-px w-12 bg-slate-200"></div>
           </div>
           <div className="flex items-center gap-2 text-slate-400 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
             <Info size={14} className="text-blue-500" />
-            <p className="text-[10px] font-black uppercase tracking-widest">Simulador Sindical Actualizado — v2.0</p>
+            <p className="text-[10px] font-black uppercase tracking-widest">Simulador Sindical Actualizado — v2.2</p>
           </div>
           <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-2xl">
-            Simulador basado en el Real Decreto-ley 14/2025 de medidas urgentes para la función pública. 
+            Simulador basado en el BOE del 3 de diciembre de 2025 (Ref. BOE-A-2025-24445). 
             Los cálculos son estimaciones brutas. El neto real dependerá de la situación fiscal de cada trabajador. 
             Los hitos 2027 y 2028 corresponden a la plataforma de negociación de UGT para la recuperación del poder adquisitivo.
           </p>
