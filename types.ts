@@ -11,7 +11,7 @@ export interface SalaryBreakdown {
 }
 
 export interface CalculationInputs {
-  baseMonthlySalary2024: number;
+  baseMonthlySalary2025: number;
   numPayments: 12 | 14;
   includeVariable2026: boolean;
 }
