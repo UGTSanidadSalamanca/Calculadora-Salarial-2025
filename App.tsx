@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   TrendingDown,
   ChevronDown,
-  Clock
+  Clock,
+  Settings2
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -43,6 +44,7 @@ const App: React.FC = () => {
   const calculations = useMemo(() => {
     const results: SalaryBreakdown[] = [];
     const annual2025 = inputs.baseMonthlySalary2025 * inputs.numPayments;
+    // 2025 ya incluye el 0.5% variable consolidado en la base de cálculo que introduce el usuario (sueldo actual)
     const factor2025 = 1 + (BOE_DATA.YEARS[0].fixed + BOE_DATA.YEARS[0].variable);
     const annual2024 = annual2025 / factor2025;
 
@@ -58,7 +60,7 @@ const App: React.FC = () => {
       differenceMonthly: 0
     });
 
-    // 2025 (Base de cálculo)
+    // 2025 (Base de cálculo - Sueldo que el usuario dice tener ahora)
     results.push({
       year: 2025,
       fixedIncrease: BOE_DATA.YEARS[0].fixed,
@@ -73,6 +75,7 @@ const App: React.FC = () => {
     // 2026+ (Proyección)
     let currentAnnual = annual2025;
     BOE_DATA.YEARS.slice(1).forEach((yearInfo) => {
+      // Aplicación optativa del IPC según el toggle
       const varInc = (yearInfo.year === 2026 && !inputs.includeVariable2026) ? 0 : yearInfo.variable;
       const totalInc = yearInfo.fixed + varInc;
       const previousAnnual = currentAnnual;
@@ -98,6 +101,7 @@ const App: React.FC = () => {
   const baseline2024 = calculations[0];
   
   // Atrasos: El trabajador percibirá de una vez la subida del 2,5% de todo 2025
+  // (Asumiendo que los atrasos se cobran sobre la nómina de 2026)
   const bolsaAtrasos = data2025.differenceMonthly * inputs.numPayments;
   const nominaConAtrasos = data2026.monthlyTotal + bolsaAtrasos;
   const incrementoAcumuladoReal = ((data2026.monthlyTotal / baseline2024.monthlyTotal) - 1) * 100;
@@ -147,9 +151,36 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* SELECTOR DE FASE: EL CAMBIO CLAVE */}
-          <div className="flex flex-col items-center gap-4">
-             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">¿Qué nómina quieres consultar?</p>
+          {/* SELECTORES DE CONFIGURACIÓN */}
+          <div className="flex flex-col items-center gap-6">
+             <div className="flex flex-wrap justify-center gap-4">
+                {/* Selector Pagas */}
+                <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 backdrop-blur-md">
+                   {[12, 14].map(n => (
+                     <button key={n} onClick={() => setInputs(p => ({...p, numPayments: n as 12|14}))}
+                       className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all ${inputs.numPayments === n ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-400'}`}>
+                       {n} PAGAS
+                     </button>
+                   ))}
+                </div>
+
+                {/* Toggle IPC 2026 */}
+                <button 
+                  onClick={() => setInputs(p => ({...p, includeVariable2026: !p.includeVariable2026}))}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl border transition-all text-[10px] font-black ${
+                    inputs.includeVariable2026 
+                      ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/20' 
+                      : 'bg-white/5 border-white/10 text-slate-400'
+                  }`}
+                >
+                  <Settings2 size={14} />
+                  IPC VARIABLE 0,5% (2026)
+                </button>
+             </div>
+
+             <div className="h-px w-20 bg-white/10"></div>
+
+             {/* Selector Atrasos vs Ordinario */}
              <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 backdrop-blur-md">
                 <button 
                   onClick={() => setShowArrearsMode(true)}
@@ -166,11 +197,6 @@ const App: React.FC = () => {
                   MES ORDINARIO
                 </button>
              </div>
-             <p className="text-[10px] font-bold text-slate-500 italic max-w-xs leading-relaxed">
-               {showArrearsMode 
-                ? "Muestra el ingreso único de Enero/Febrero con toda la retroactividad acumulada." 
-                : "Muestra tu nuevo sueldo base consolidado para el resto del año 2026."}
-             </p>
           </div>
         </div>
       </section>
@@ -253,14 +279,6 @@ const App: React.FC = () => {
             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-2">
               <Clock size={14} /> Evolución del acuerdo
             </h4>
-            <div className="flex bg-slate-200/50 p-1 rounded-xl">
-               {[12, 14].map(n => (
-                 <button key={n} onClick={() => setInputs(p => ({...p, numPayments: n as 12|14}))}
-                   className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${inputs.numPayments === n ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>
-                   {n} PAGAS
-                 </button>
-               ))}
-            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-6">
@@ -290,9 +308,11 @@ const App: React.FC = () => {
                     <div>
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Impacto Año</p>
                       <p className={`text-xl font-black ${is2024 ? 'text-slate-400' : 'text-slate-900'}`}>
-                        {is2024 ? '0%' : is2025 ? '2.5%' : `${(year.fixedIncrease + (year.year === 2026 && inputs.includeVariable2026 ? year.variableIncrease : 0)) * 100}%`}
+                        {is2024 ? '0%' : is2025 ? '2.5%' : `${(year.fixedIncrease + year.variableIncrease) * 100}%`}
                       </p>
-                      <p className="text-[10px] font-medium text-slate-400 italic">{is2024 ? 'Pre-Acuerdo' : is2025 ? 'Fijo+Variable' : 'Pactado'}</p>
+                      <p className="text-[10px] font-medium text-slate-400 italic">
+                        {is2024 ? 'Pre-Acuerdo' : is2025 ? 'Fijo+IPC' : is2026 && inputs.includeVariable2026 ? 'Fijo + IPC' : is2026 ? 'Solo Fijo' : 'Pactado'}
+                      </p>
                     </div>
                     <div>
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Nómina Mensual</p>
