@@ -1,8 +1,7 @@
-
 {
   "name": "calculadora-salarial-ugt",
-  "version": "1.0.0",
-  "description": "Simulador de subida salarial para funcionarios 2025-2026",
+  "version": "1.1.0",
+  "description": "Simulador de subida salarial para empleados públicos 2025-2028 (Acuerdo Marco)",
   "private": true,
   "scripts": {
     "start": "npx serve ."
@@ -10,10 +9,12 @@
   "keywords": [
     "ugt",
     "funcionarios",
+    "empleados-publicos",
     "salario",
+    "acuerdo-marco",
     "boe",
     "calculadora"
   ],
-  "author": "UGT",
+  "author": "UGT Sanidad Salamanca",
   "license": "MIT"
 }

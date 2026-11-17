@@ -1,13 +1,12 @@
-
 export const BOE_DATA = {
-  TITLE: "BOE-A-2025-24445",
+  TITLE: "Acuerdo Marco Función Pública 2025-2028 | RDL 14/2025",
   YEARS: [
     {
       year: 2025,
       fixed: 0.02, 
       variable: 0.005,
       isConfirmed: true,
-      description: "2% fijo + 0,5% IPC"
+      description: "2% fijo + 0,5% IPC (2,5% consolidado)"
     },
     {
       year: 2026,
@@ -18,17 +17,17 @@ export const BOE_DATA = {
     },
     {
       year: 2027,
-      fixed: 0.015,
+      fixed: 0.045,
       variable: 0.005,
-      isConfirmed: false,
-      description: "1,5% Recuperación UGT"
+      isConfirmed: true,
+      description: "4,5% fijo (+ 0,5% IPC 2026)"
     },
     {
       year: 2028,
-      fixed: 0.015,
-      variable: 0.005,
-      isConfirmed: false,
-      description: "1,5% Recuperación UGT"
+      fixed: 0.020,
+      variable: 0.0,
+      isConfirmed: true,
+      description: "2% fijo Acuerdo Marco"
     }
   ]
 };

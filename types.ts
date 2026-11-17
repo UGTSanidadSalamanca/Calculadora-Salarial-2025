@@ -1,4 +1,3 @@
-
 export interface SalaryBreakdown {
   year: number;
   fixedIncrease: number;
