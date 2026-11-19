@@ -12,7 +12,7 @@ export const BOE_DATA = {
       year: 2026,
       fixed: 0.015,
       variable: 0.005,
-      isConfirmed: true,
+      isConfirmed: false,
       description: "1,5% fijo + 0,5% condicionado al IPC"
     },
     {
