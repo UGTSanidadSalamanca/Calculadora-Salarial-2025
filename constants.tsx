@@ -3,24 +3,24 @@ export const BOE_DATA = {
   YEARS: [
     {
       year: 2025,
-      fixed: 0.02, 
-      variable: 0.005,
+      fixed: 0.025, 
+      variable: 0,
       isConfirmed: true,
-      description: "2% fijo + 0,5% IPC (2,5% consolidado)"
+      description: "2,5% consolidable"
     },
     {
       year: 2026,
       fixed: 0.015,
       variable: 0.005,
       isConfirmed: true,
-      description: "1,5% fijo + 0,5% IPC"
+      description: "1,5% fijo + 0,5% condicionado al IPC"
     },
     {
       year: 2027,
       fixed: 0.045,
-      variable: 0.005,
+      variable: 0,
       isConfirmed: true,
-      description: "4,5% fijo (+ 0,5% IPC 2026)"
+      description: "4,5% sobre retribuciones a 31/12/2026"
     },
     {
       year: 2028,
