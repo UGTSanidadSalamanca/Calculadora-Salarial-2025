@@ -33,6 +33,7 @@ import { CalculationInputs, SalaryBreakdown } from './types.ts';
 const App: React.FC = () => {
   const [inputs, setInputs] = useState<CalculationInputs>({
     baseMonthlySalary2025: 2000,
+    referenceYear: 2025,
     numPayments: 14,
     includeVariable2026: true
   });
@@ -41,12 +42,14 @@ const App: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<2026 | 2027 | 2028>(2027);
 
   // Estado para alternar entre ver la nómina con atrasos/liquidación o la consolidada
-  const [showArrearsMode, setShowArrearsMode] = useState(true);
+  const [showArrearsMode, setShowArrearsMode] = useState(false);
 
   const calculations = useMemo(() => {
     const results: SalaryBreakdown[] = [];
-    const annual2025 = inputs.baseMonthlySalary2025 * inputs.numPayments;
-    // 2025 ya incluye el 0.5% variable consolidado en la base de cálculo que introduce el usuario (sueldo actual)
+    const factor2026 = 1 + BOE_DATA.YEARS[1].fixed + (inputs.includeVariable2026 ? BOE_DATA.YEARS[1].variable : 0);
+    // Permitir una base de 2025 o una cuantía que ya incluya el incremento de 2026.
+    const annual2025 = (inputs.baseMonthlySalary2025 * inputs.numPayments) / (inputs.referenceYear === 2026 ? factor2026 : 1);
+    // El incremento del 2,5 % de 2025 es consolidable, sin componente IPC propio de 2025.
     const factor2025 = 1 + (BOE_DATA.YEARS[0].fixed + BOE_DATA.YEARS[0].variable);
     const annual2024 = annual2025 / factor2025;
 
@@ -69,9 +72,9 @@ const App: React.FC = () => {
       variableIncrease: BOE_DATA.YEARS[0].variable,
       totalPercentage: (factor2025 - 1) * 100,
       annualTotal: annual2025,
-      monthlyTotal: inputs.baseMonthlySalary2025,
+      monthlyTotal: annual2025 / inputs.numPayments,
       differenceAnnual: annual2025 - annual2024,
-      differenceMonthly: inputs.baseMonthlySalary2025 - (annual2024 / inputs.numPayments)
+      differenceMonthly: (annual2025 - annual2024) / inputs.numPayments
     });
 
     // 2026 - 2028 (Senda plurianual del Acuerdo Marco)
@@ -107,24 +110,23 @@ const App: React.FC = () => {
 
   const activeData = calculations.find(d => d.year === selectedYear) || data2027;
 
-  // Atrasos y pagos únicos por retroactividad según el año seleccionado:
+  // Estimación opcional de un supuesto de retroactividad, separada del sueldo ordinario:
   // - 2026: Atrasos de 2025 aplicados a 12 mensualidades y 2 pagas extra
   // - 2027: Abono retroactivo del 0,5% de desviación del IPC de 2026 liquidado en el 1T de 2027
   // - 2028: Consolidación total acumulada
   const bolsaAtrasos = useMemo(() => {
-    if (selectedYear === 2026) {
-      return data2025.differenceMonthly * inputs.numPayments;
-    } else if (selectedYear === 2027 && inputs.includeVariable2026) {
-      return (data2025.monthlyTotal * 0.005) * inputs.numPayments;
+    if (selectedYear === 2027 && inputs.includeVariable2026) {
+      // Supuesto de liquidación completa del 0,5 % de 2026; no presupone que siga pendiente.
+      return data2025.annualTotal * 0.005;
     }
     return 0;
   }, [selectedYear, data2025, inputs]);
 
-  const nominaConAtrasos = activeData.monthlyTotal + bolsaAtrasos;
-  const incrementoAcumuladoReal = ((activeData.monthlyTotal / baseline2024.monthlyTotal) - 1) * 100;
+  const nominaConAtrasos = activeData.monthlyTotal; // No sumar atrasos teóricos a una nómina ordinaria.
+  const incrementoAcumuladoNominal = ((activeData.monthlyTotal / baseline2024.monthlyTotal) - 1) * 100;
 
   const formatCurrency = (val: number) => 
-    new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
+    new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-red-100 pb-20">
@@ -158,7 +160,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-white text-sm font-bold uppercase tracking-[0.2em] opacity-60">Tu sueldo bruto mensual (Base 2025)</h2>
+            <h2 className="text-white text-sm font-bold uppercase tracking-[0.2em] opacity-60">Tu sueldo bruto mensual (base seleccionada)</h2>
             <div className="relative inline-block group">
               <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 font-black text-4xl group-focus-within:text-red-500">€</span>
               <input 
@@ -173,6 +175,15 @@ const App: React.FC = () => {
           {/* SELECTORES DE CONFIGURACIÓN */}
           <div className="flex flex-col items-center gap-6">
              <div className="flex flex-wrap justify-center gap-4">
+                {/* Año del salario introducido */}
+                <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10">
+                  {([2025, 2026] as const).map(year => (
+                    <button key={year} onClick={() => setInputs(p => ({...p, referenceYear: year}))}
+                      className={`px-4 py-2 rounded-xl text-[10px] font-black ${inputs.referenceYear === year ? 'bg-white text-slate-900' : 'text-slate-400'}`}>
+                      BASE {year}
+                    </button>
+                  ))}
+                </div>
                 {/* Selector Año Objetivo */}
                 <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 backdrop-blur-md">
                    {([2026, 2027, 2028] as const).map(year => (
@@ -206,10 +217,10 @@ const App: React.FC = () => {
                       ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/20' 
                       : 'bg-white/5 border-white/10 text-slate-400'
                   }`}
-                  title="Cláusula de garantía ligada al IPC acumulado de 2026 abonable en 2027"
+                  title="Cláusula condicionada al IPC 2026 >= 1,5 %, abonable en el primer trimestre de 2027"
                 >
                   <Settings2 size={14} />
-                  IPC VARIABLE +0,5%
+                  IPC 2026 +0,5% (CONDICIONAL)
                 </button>
              </div>
 
@@ -223,9 +234,9 @@ const App: React.FC = () => {
                 >
                   <Zap size={14} fill={showArrearsMode ? "currentColor" : "none"} />
                   {selectedYear === 2026 
-                    ? 'CON ATRASOS 2025' 
+                    ? 'ATRASOS 2025 NO ESTIMADOS' 
                     : selectedYear === 2027 
-                      ? 'CON ATRASOS IPC 2026' 
+                      ? 'ESTIMAR IPC 2026' 
                       : 'CONSOLIDADO 2028'}
                 </button>
                 <button 
@@ -255,7 +266,7 @@ const App: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${showArrearsMode && bolsaAtrasos > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                     {showArrearsMode && bolsaAtrasos > 0 
-                      ? `Ingreso Bruto Estimado (${selectedYear})` 
+                      ? `Sueldo bruto consolidado (${selectedYear})` 
                       : `Nuevo Sueldo Consolidado (${selectedYear})`}
                   </p>
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 uppercase">
@@ -263,7 +274,7 @@ const App: React.FC = () => {
                   </span>
                 </div>
                 <h3 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter">
-                  {formatCurrency(showArrearsMode && bolsaAtrasos > 0 ? nominaConAtrasos : activeData.monthlyTotal)}
+                  {formatCurrency(activeData.monthlyTotal)}
                 </h3>
               </div>
               <div className={`p-4 rounded-3xl ${showArrearsMode && bolsaAtrasos > 0 ? 'bg-amber-50 text-amber-500' : 'bg-emerald-50 text-emerald-500'}`}>
@@ -284,7 +295,7 @@ const App: React.FC = () => {
                   <p className="text-[10px] font-bold text-amber-400 italic">
                     {selectedYear === 2026 
                       ? 'Pago único por retroactividad 2025' 
-                      : 'Liquidación 0,5% IPC 2026 en 1T 2027'}
+                      : 'Estimación no garantizada del 0,5 % de 2026; su abono depende del IPC y de la Administración'}
                   </p>
                 </div>
               ) : (
@@ -301,10 +312,10 @@ const App: React.FC = () => {
           <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-slate-900/10 border-b-8 border-red-600 flex flex-col justify-between group">
             <div className="space-y-6">
               <p className="text-[10px] font-black text-red-500 uppercase tracking-widest flex items-center gap-2">
-                 <TrendingUp size={14} /> Recuperación Real
+                 <TrendingUp size={14} /> Incremento salarial nominal
               </p>
               <div className="space-y-1">
-                <h3 className="text-6xl font-black text-white tracking-tighter">+{incrementoAcumuladoReal.toFixed(1)}%</h3>
+                <h3 className="text-6xl font-black text-white tracking-tighter">+{incrementoAcumuladoNominal.toFixed(1)}%</h3>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Acuerdo 2024-{selectedYear}</p>
               </div>
             </div>
@@ -312,21 +323,21 @@ const App: React.FC = () => {
             <div className="mt-10 space-y-4">
               <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
                 <div className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase mb-2">
-                  <span>Poder adquisitivo vs 2024</span>
-                  <span>{incrementoAcumuladoReal.toFixed(1)}% / +11,4%</span>
+                  <span>Incremento nominal vs 2024</span>
+                  <span>{incrementoAcumuladoNominal.toFixed(1)}% / +11,4%</span>
                 </div>
                 <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
                    <div 
                      className="h-full bg-red-600 transition-all duration-1000" 
-                     style={{ width: `${Math.min(100, (incrementoAcumuladoReal / 11.45) * 100)}%` }}
+                     style={{ width: `${Math.min(100, (incrementoAcumuladoNominal / 11.45) * 100)}%` }}
                    ></div>
                 </div>
               </div>
               <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic">
                 {selectedYear === 2027 
-                  ? "Incluye el 4,5% aprobado por Real Decreto-ley más la cláusula de compensación de inflación." 
+                  ? "Incluye la subida del 4,5 % sobre 2026; el 0,5 % de 2026 sigue condicionado al IPC." 
                   : selectedYear === 2028 
-                    ? "Cierre del Acuerdo Marco con una subida global superior al 11,4% compuesto." 
+                    ? "Cierre previsto del Acuerdo Marco con incrementos acumulados y compuestos." 
                     : "Gracias al Acuerdo Marco, tu salario base se consolida permanentemente."}
               </p>
             </div>
@@ -389,11 +400,11 @@ const App: React.FC = () => {
                         {is2024 
                           ? 'Pre-Acuerdo' 
                           : is2025 
-                            ? 'Fijo + IPC consolidado' 
+                            ? 'Consolidable' 
                             : year.year === 2026 
                               ? (inputs.includeVariable2026 ? '1,5% Fijo + 0,5% IPC' : '1,5% Fijo') 
                               : year.year === 2027 
-                                ? '4,5% RDL (+0,5% IPC)' 
+                                ? '4,5% sobre 2026 actualizado' 
                                 : '2,0% Cierre Acuerdo'}
                       </p>
                     </div>
@@ -434,8 +445,8 @@ const App: React.FC = () => {
           <div className="space-y-4">
             <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto">
               Esta herramienta es un simulador informativo desarrollado por UGT Sanidad Salamanca. Los cálculos se basan en el
-              sueldo bruto y recogen las subidas acordadas en el <strong>Acuerdo Marco 2025-2028</strong> y los Reales Decretos-leyes
-              correspondientes (RDL 14/2025 y RDL de actualización para 2027 con subida fija del 4,5% y compensación por IPC).
+              sueldo bruto homogéneo; las pagas extra y los complementos variables pueden diferir. Recogen las subidas acordadas en el <strong>Acuerdo Marco 2025-2028</strong> y los Reales Decretos-leyes
+              correspondientes (RDL 14/2025 y RDL 37/2026 con subida fija del 4,5% y compensación por IPC).
               Recuerda que tu nómina final dependerá de tu situación personal (IRPF, antigüedad, trienios, carrera profesional, etc.).
             </p>
             <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">
